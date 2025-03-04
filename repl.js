@@ -18,6 +18,9 @@ export const options = {
 export default async function () {
     const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 
+    for (var name in this)
+        console.log(name);
+
     // We need to copy these over to the global context otherwise they
     // are not accessible from the newly created AsyncFunction below.
     global.http = http
@@ -27,6 +30,9 @@ export default async function () {
     while (true) {
         try {
             var input = read_stdin("> ");
+            if (input === "exit") {
+                break;
+            }
 
             var fn = undefined;
             try {
