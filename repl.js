@@ -18,8 +18,7 @@ export const options = {
 export default async function () {
     const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 
-    for (var name in this)
-        console.log(name);
+    console.log("Required modules by this script: ", required_modules);
 
     // We need to copy these over to the global context otherwise they
     // are not accessible from the newly created AsyncFunction below.

@@ -3,6 +3,7 @@ package modules
 import (
 	"fmt"
 	"net/url"
+	"slices"
 	"strings"
 
 	"github.com/grafana/sobek"
@@ -28,15 +29,16 @@ type moduleCacheElement struct {
 
 // ModuleResolver knows how to get base Module that can be initialized
 type ModuleResolver struct {
-	cache     map[string]moduleCacheElement
-	goModules map[string]any
-	loadCJS   FileLoader
-	compiler  *compiler.Compiler
-	locked    bool
-	reverse   map[any]*url.URL // maybe use sobek.ModuleRecord as key
-	base      *url.URL
-	usage     *usage.Usage
-	logger    logrus.FieldLogger
+	requiredModules []string
+	cache           map[string]moduleCacheElement
+	goModules       map[string]any
+	loadCJS         FileLoader
+	compiler        *compiler.Compiler
+	locked          bool
+	reverse         map[any]*url.URL // maybe use sobek.ModuleRecord as key
+	base            *url.URL
+	usage           *usage.Usage
+	logger          logrus.FieldLogger
 }
 
 // NewModuleResolver returns a new module resolution instance that will resolve.
@@ -67,6 +69,8 @@ func (mr *ModuleResolver) resolveSpecifier(basePWD *url.URL, arg string) (*url.U
 }
 
 func (mr *ModuleResolver) requireModule(name string) (sobek.ModuleRecord, error) {
+	mr.requiredModules = append(mr.requiredModules, name)
+
 	if mr.locked {
 		return nil, fmt.Errorf(notPreviouslyResolvedModule, name)
 	}
@@ -187,6 +191,11 @@ func (mr *ModuleResolver) Imported() []string {
 		modules = append(modules, name)
 	}
 	return modules
+}
+
+// Required returns the list of modules imported by the script.
+func (mr *ModuleResolver) Required() []string {
+	return slices.Clone(mr.requiredModules)
 }
 
 func (mr *ModuleResolver) sobekModuleResolver(

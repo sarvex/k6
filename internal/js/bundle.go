@@ -1,17 +1,17 @@
 package js
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-	"bufio"
-	"os"
 
 	"github.com/grafana/sobek"
 	"github.com/sirupsen/logrus"
@@ -302,8 +302,18 @@ func (b *Bundle) newCompiler(logger logrus.FieldLogger) *compiler.Compiler {
 	return c
 }
 
-func (b *Bundle) instantiate(vuImpl *moduleVUImpl, vuID uint64) (*BundleInstance, error) {
+func (b *Bundle) instantiate(vuImpl *moduleVUImpl, vuID uint64) (_ *BundleInstance, rerr error) {
 	rt := vuImpl.runtime
+
+	defer func() {
+		if rerr != nil {
+			return
+		}
+		if err := rt.Set("required_modules", b.ModuleResolver.Required()); err != nil {
+			panic(fmt.Errorf("failed to set '%s' global object: %w", "required_modules", err))
+		}
+	}()
+
 	err := b.setupJSRuntime(rt, vuID, b.preInitState.Logger)
 	if err != nil {
 		return nil, err
