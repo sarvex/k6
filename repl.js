@@ -50,7 +50,7 @@ export default async function () {
         }
 
         input = input.trim();
-        if (input.startsWith("let") || input.startsWith("const") || input.startsWith("var")) {
+        if (input.startsWith("let ") || input.startsWith("const ") || input.startsWith("var ")) {
             console.error("Invalid assignment in REPL context.");
             console.info("Hint: In order to set a variable globally, use `foo = 123`.");
         }
