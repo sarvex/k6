@@ -28,14 +28,6 @@ export default async function () {
         try {
             var input = read_stdin("> ");
 
-            // Special syntax: '%set foo = 123' actually evaluates
-            // 'global.foo = 123', which sets the value in globals.
-            // The value can then be referenced by just using 'foo',
-            // as if we had run 'var foo = 123'.
-            if (input.startsWith("%set ")) {
-                input = "global." + input.substring(4).trim();
-            }
-
             var fn = undefined;
             try {
                 // Input was an expression
@@ -55,10 +47,12 @@ export default async function () {
             }
         } catch (error) {
             console.error(error.toString());
-            input = input.trim();
-            if (input.startsWith("let") || input.startsWith("const") || input.startsWith("var")) {
-                console.info("Hint: In order to set a variable globally, use `%foo = 123`.");
-            }
+        }
+
+        input = input.trim();
+        if (input.startsWith("let") || input.startsWith("const") || input.startsWith("var")) {
+            console.error("Invalid assignment in REPL context.");
+            console.info("Hint: In order to set a variable globally, use `foo = 123`.");
         }
     }
 }
